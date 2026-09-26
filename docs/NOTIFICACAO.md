@@ -64,3 +64,25 @@ novaNotificacao.setPaciente(paciente);
 // O repositório irá salvar tudo na mesma linha da tabela "notificacao"
 notificacaoRepository.save(novaNotificacao);
 ```
+
+## 6. Camada de Transferência de Dados (DTOs)
+Para a comunicação com APIs externas, utilizamos o padrão de projeto DTO (Data Transfer Object) implementado nativamente através de **Java Records**. 
+Essa abordagem nos traz vantagens como imutabilidade e a redução de código (boilerplate) sem precisar usar bibliotecas de terceiros como o Lombok.
+
+### DTOs Aninhados
+Em vez de recebermos/enviarmos um JSON totalmente achatado (Flat), optamos por espelhar a estrutura das entidades em DTOs Aninhados para que a comunicação seja organizada e de fácil leitura.
+
+* NotificacaoRequestDTO/NotificacaoResponseDTO: Agregadores principais da requisi��o.
+* PacienteRequestDTO/PacienteResponseDTO: Aninhados dentro de Notificacao.
+* EnderecoRequestDTO/EnderecoResponseDTO: Aninhados dentro de Paciente.
+* InvestigacaoRequestDTO/InvestigacaoResponseDTO: Aninhados dentro de Notificacao.
+
+### Validações (Jakarta Validation)
+Nas classes *RequestDTO, que representam a entrada de dados (Payload do POST/PUT), aplicamos anotações do *Jakarta Validation*:
+* @NotNull: Para tipos complexos ou enums (ex: TipoNotificacao).
+* @NotBlank: Para textos obrigatórios, impedindo strings vazias ou em branco (ex: gravidadeDoenca).
+* @PastOrPresent: Para garantir que a dataNotificacao não seja inserida com data no futuro.
+* @Valid: Anotado sobre objetos aninhados (ex: paciente dentro de NotificacaoRequestDTO) para acionar o efeito de validação em cascata.
+
+## 7. Acesso a Dados (Repository)
+A persistência da entidade é feita através do NotificacaoRepository, que extende o JpaRepository<Notificacao, String>, ganhando instantaneamente todos os métodos de CRUD necessários (save, findById, findAll, etc) sem precisar de queries SQL na mão.

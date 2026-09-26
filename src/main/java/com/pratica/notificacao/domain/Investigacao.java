@@ -14,10 +14,10 @@ public class Investigacao {
     private LocalDate dataInvestigacao;
     private Integer classificacaoFinal;
     
-    @Enumerated(EnumType.ORDINAL)
+    
     private CriterioConfirmacao criterioConfirmacaoDescarte;
     
-    @Enumerated(EnumType.ORDINAL)
+    
     private SimNaoIgnorado autoctoneMunicipioResidencia;
     
     private String ufLocalInfeccao;
@@ -26,10 +26,10 @@ public class Investigacao {
     private String distritoLocalInfeccao;
     private String bairroLocalInfeccao;
     
-    @Enumerated(EnumType.ORDINAL)
+    
     private SimNaoIgnorado doencaRelacionadaTrabalho;
     
-    @Enumerated(EnumType.ORDINAL)
+    
     private EvolucaoCaso evolucaoCaso;
     
     private LocalDate dataObito;

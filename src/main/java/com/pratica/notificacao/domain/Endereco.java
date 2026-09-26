@@ -21,7 +21,7 @@ public class Endereco {
     private String pontoReferenciaResidencia;
     private String cepResidencia;
     
-    @Enumerated(EnumType.ORDINAL)
+    
     private ZonaResidencia zonaResidencia;
     
     private String paisResidencia;

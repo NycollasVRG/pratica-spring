@@ -15,12 +15,12 @@ public class Paciente {
     private LocalDate dataNascimento;
     private Integer idade;
     
-    @Enumerated(EnumType.STRING)
+    
     private Sexo sexo;
     
     private Integer gestante;
     
-    @Enumerated(EnumType.ORDINAL)
+    
     private RacaCor racaCor;
     
     private Integer escolaridade;

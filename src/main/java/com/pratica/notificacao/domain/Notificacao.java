@@ -1,12 +1,8 @@
 package com.pratica.notificacao.domain;
 
 import com.pratica.notificacao.domain.enums.TipoNotificacao;
-import jakarta.persistence.Embedded;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+
 import java.time.LocalDate;
 
 @Entity
@@ -16,7 +12,7 @@ public class Notificacao {
     @Id
     private String numeroNotificacao;
     
-    @Enumerated(EnumType.ORDINAL)
+    
     private TipoNotificacao tipoNotificacao;
     
     private String agravoDoenca;
