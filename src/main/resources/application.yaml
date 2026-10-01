@@ -4,8 +4,8 @@ spring:
 
   datasource:
     url: jdbc:postgresql://localhost:5432/notificacao
-    username: postgres
-    password: nycollas
+    username: ${GROUP_DB_USER:postgres}
+    password: ${GROUP_DB_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
 
   jpa:
