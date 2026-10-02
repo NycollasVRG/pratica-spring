@@ -2,8 +2,6 @@ package com.pratica.notificacao.domain;
 
 import com.pratica.notificacao.domain.enums.ZonaResidencia;
 import jakarta.persistence.Embeddable;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 
 @Embeddable
 public class Endereco {

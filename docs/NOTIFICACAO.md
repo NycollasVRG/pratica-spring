@@ -72,7 +72,7 @@ Essa abordagem nos traz vantagens como imutabilidade e a redução de código (b
 ### DTOs Aninhados
 Em vez de recebermos/enviarmos um JSON totalmente achatado (Flat), optamos por espelhar a estrutura das entidades em DTOs Aninhados para que a comunicação seja organizada e de fácil leitura.
 
-* NotificacaoRequestDTO/NotificacaoResponseDTO: Agregadores principais da requisi��o.
+* NotificacaoRequestDTO/NotificacaoResponseDTO: Agregadores principais da requisição.
 * PacienteRequestDTO/PacienteResponseDTO: Aninhados dentro de Notificacao.
 * EnderecoRequestDTO/EnderecoResponseDTO: Aninhados dentro de Paciente.
 * InvestigacaoRequestDTO/InvestigacaoResponseDTO: Aninhados dentro de Notificacao.

@@ -1,11 +1,13 @@
 package com.pratica.notificacao.dto.request;
 
 import com.pratica.notificacao.domain.enums.ZonaResidencia;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import com.pratica.notificacao.validation.RegrasResidencia;
+import com.pratica.notificacao.validation.UfValida;
+import jakarta.validation.constraints.Pattern;
 
+@RegrasResidencia
 public record EnderecoRequestDTO(
-    @Size(max = 2, message = "UF deve ter no máximo 2 caracteres")
+    @UfValida
     String ufResidencia,
     
     String municipioResidencia,
@@ -17,9 +19,10 @@ public record EnderecoRequestDTO(
     String geoCampo1,
     String geoCampo2,
     String pontoReferenciaResidencia,
+
+    @Pattern(regexp = "^(\\d{5}-?\\d{3})?$", message = "O CEP deve ter 8 dígitos (com ou sem hífen)")
     String cepResidencia,
     ZonaResidencia zonaResidencia,
     
-    @NotBlank(message = "O país de residência não pode estar em branco")
     String paisResidencia
 ) {}

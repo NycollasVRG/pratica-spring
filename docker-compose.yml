@@ -1,0 +1,37 @@
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: notificacao-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: notificacao
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - notificacao-dados:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d notificacao"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    profiles: ["app"]
+    build: .
+    container_name: notificacao-app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/notificacao
+      GROUP_DB_USER: postgres
+      GROUP_DB_PASSWORD: postgres
+    ports:
+      - "8080:8080"
+
+volumes:
+  notificacao-dados:

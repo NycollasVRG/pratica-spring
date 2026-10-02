@@ -1,6 +1,7 @@
 package com.pratica.notificacao.dto.request;
 
 import com.pratica.notificacao.domain.enums.TipoNotificacao;
+import com.pratica.notificacao.validation.UfValida;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -22,6 +23,7 @@ public record NotificacaoRequestDTO(
     LocalDate dataNotificacao,
     
     @NotBlank(message = "O UF da notificação é obrigatório")
+    @UfValida
     String ufNotificacao,
     
     @NotBlank(message = "O município da notificação é obrigatório")

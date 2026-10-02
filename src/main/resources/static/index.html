@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notificações — SINAN</title>
+  <link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+  <header>
+    <h1>Sistema de Notificação de Agravos</h1>
+    <p>CRUD de notificações — REST + Spring Boot (RFC 9457)</p>
+  </header>
+
+  <main>
+    <div id="mensagens" role="status" aria-live="polite"></div>
+
+    <section id="filtros" aria-labelledby="titulo-filtros">
+      <h2 id="titulo-filtros">Filtros e listagem</h2>
+      <form id="form-filtros">
+        <div class="grade">
+          <label>UF
+            <select id="filtroUf"></select>
+          </label>
+          <label>Município
+            <input type="text" id="filtroMunicipio" autocomplete="off">
+          </label>
+          <label>Tipo
+            <select id="filtroTipo"></select>
+          </label>
+          <label>Sexo
+            <select id="filtroSexo"></select>
+          </label>
+          <label>Data inicial
+            <input type="date" id="filtroDataInicio">
+          </label>
+          <label>Data final
+            <input type="date" id="filtroDataFim">
+          </label>
+          <label>Ordenar por
+            <select id="ordenarPor"></select>
+          </label>
+          <label>Direção
+            <select id="direcao"></select>
+          </label>
+        </div>
+        <div class="linha-acoes">
+          <label class="check"><input type="checkbox" id="filtroDuplicadas"> Somente duplicadas (RN01, ±3 dias)</label>
+          <button type="submit">Filtrar</button>
+          <button type="button" id="btn-limpar-filtros">Limpar filtros</button>
+        </div>
+      </form>
+    </section>
+
+    <section id="listagem" aria-labelledby="titulo-listagem">
+      <h2 id="titulo-listagem">Notificações</h2>
+      <div class="tabela-rolagem">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Número</th>
+              <th scope="col">Agravo</th>
+              <th scope="col">Data</th>
+              <th scope="col">UF</th>
+              <th scope="col">Município</th>
+              <th scope="col">Tipo</th>
+              <th scope="col">Paciente</th>
+              <th scope="col">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="corpo-tabela"></tbody>
+        </table>
+      </div>
+      <div class="paginacao">
+        <button type="button" id="btn-anterior">&larr; Anterior</button>
+        <span id="info-pagina">—</span>
+        <button type="button" id="btn-proximo">Próximo &rarr;</button>
+        <label>Por página
+          <select id="tamanhoPagina">
+            <option value="5">5</option>
+            <option value="10" selected>10</option>
+            <option value="25">25</option>
+            <option value="50">50</option>
+          </select>
+        </label>
+      </div>
+    </section>
+
+    <section id="formulario" aria-labelledby="titulo-form">
+      <div class="cabecalho-form">
+        <h2 id="titulo-form">Nova notificação</h2>
+        <button type="button" id="btn-nova">Nova notificação</button>
+      </div>
+
+      <form id="form-notificacao">
+        <fieldset>
+          <legend>Notificação</legend>
+          <div class="grade">
+            <label>Número *
+              <input type="text" id="numeroNotificacao" required autocomplete="off">
+            </label>
+            <label>Tipo *
+              <select id="tipoNotificacao" required></select>
+            </label>
+            <label>Agravo/doença *
+              <input type="text" id="agravoDoenca" required autocomplete="off">
+            </label>
+            <label>Data da notificação *
+              <input type="date" id="dataNotificacao" required>
+            </label>
+            <label>UF da notificação *
+              <select id="ufNotificacao" required></select>
+            </label>
+            <label>Município da notificação *
+              <input type="text" id="municipioNotificacao" required autocomplete="off">
+            </label>
+            <label>Unidade de saúde notificadora *
+              <input type="text" id="unidadeSaudeNotificadora" required autocomplete="off">
+            </label>
+            <label>Data dos primeiros sintomas
+              <input type="date" id="dataPrimeirosSintomas">
+            </label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Paciente</legend>
+          <div class="grade">
+            <label>Nome do paciente *
+              <input type="text" id="nomePaciente" required autocomplete="off">
+            </label>
+            <label>Data de nascimento
+              <input type="date" id="dataNascimento">
+            </label>
+            <label>Idade
+              <input type="number" id="idade" min="0" max="150">
+            </label>
+            <label>Sexo *
+              <select id="sexo" required></select>
+            </label>
+            <label>Gestante (RN02)
+              <select id="gestante"></select>
+            </label>
+            <label>Raça/cor
+              <select id="racaCor"></select>
+            </label>
+            <label>Escolaridade
+              <input type="number" id="escolaridade" min="0">
+            </label>
+            <label>Cartão SUS (15 dígitos)
+              <input type="text" id="numeroCartaoSus" inputmode="numeric" pattern="\d{15}" title="15 dígitos" autocomplete="off">
+            </label>
+            <label>Nome da mãe
+              <input type="text" id="nomeMae" autocomplete="off">
+            </label>
+            <label>Telefone (10 ou 11 dígitos)
+              <input type="text" id="telefone" inputmode="numeric" pattern="\d{10,11}" title="10 ou 11 dígitos" autocomplete="off">
+            </label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Residência (RN03)</legend>
+          <div class="grade">
+            <label>País
+              <input type="text" id="paisResidencia" placeholder="Brasil (em branco = Brasil)" autocomplete="off">
+            </label>
+            <label>UF da residência
+              <select id="ufResidencia"></select>
+            </label>
+            <label>Município da residência
+              <input type="text" id="municipioResidencia" autocomplete="off">
+            </label>
+            <label>Distrito
+              <input type="text" id="distritoResidencia" autocomplete="off">
+            </label>
+            <label>Bairro
+              <input type="text" id="bairroResidencia" autocomplete="off">
+            </label>
+            <label>Logradouro
+              <input type="text" id="logradouroResidencia" autocomplete="off">
+            </label>
+            <label>Número
+              <input type="text" id="numeroResidencia" autocomplete="off">
+            </label>
+            <label>Complemento
+              <input type="text" id="complementoResidencia" autocomplete="off">
+            </label>
+            <label>CEP
+              <input type="text" id="cepResidencia" inputmode="numeric" pattern="\d{5}-?\d{3}" title="8 dígitos (com ou sem hífen)" autocomplete="off">
+            </label>
+            <label>Zona
+              <select id="zonaResidencia"></select>
+            </label>
+            <label>Ponto de referência
+              <input type="text" id="pontoReferenciaResidencia" autocomplete="off">
+            </label>
+            <label>Geo 1
+              <input type="text" id="geoCampo1" autocomplete="off">
+            </label>
+            <label>Geo 2
+              <input type="text" id="geoCampo2" autocomplete="off">
+            </label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Investigação — preencha a data para salvar o bloco</legend>
+          <div class="grade">
+            <label>Data da investigação
+              <input type="date" id="invest-data">
+            </label>
+            <label>Classificação final
+              <input type="number" id="invest-classificacao">
+            </label>
+            <label>Critério de confirmação
+              <select id="invest-criterio"></select>
+            </label>
+            <label>Autóctone do município
+              <select id="invest-autoctone"></select>
+            </label>
+            <label>UF do local de infecção
+              <select id="invest-uf-local"></select>
+            </label>
+            <label>País do local de infecção
+              <input type="text" id="invest-pais-local" autocomplete="off">
+            </label>
+            <label>Município do local de infecção
+              <input type="text" id="invest-municipio-local" autocomplete="off">
+            </label>
+            <label>Distrito do local de infecção
+              <input type="text" id="invest-distrito-local" autocomplete="off">
+            </label>
+            <label>Bairro do local de infecção
+              <input type="text" id="invest-bairro-local" autocomplete="off">
+            </label>
+            <label>Doença relacionada ao trabalho
+              <select id="invest-trabalho"></select>
+            </label>
+            <label>Evolução do caso
+              <select id="invest-evolucao"></select>
+            </label>
+            <label>Data do óbito
+              <input type="date" id="invest-obito">
+            </label>
+            <label>Data de encerramento
+              <input type="date" id="invest-encerramento">
+            </label>
+          </div>
+        </fieldset>
+
+        <div class="linha-acoes">
+          <button type="submit" id="btn-salvar">Salvar</button>
+          <button type="button" id="btn-limpar-form">Limpar</button>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <footer>
+    <p>* campos obrigatórios — erros da API aparecem acima, no formato problem+json (RFC 9457).</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

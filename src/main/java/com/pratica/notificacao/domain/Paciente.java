@@ -1,11 +1,10 @@
 package com.pratica.notificacao.domain;
 
+import com.pratica.notificacao.domain.enums.PeriodoGestacional;
 import com.pratica.notificacao.domain.enums.RacaCor;
 import com.pratica.notificacao.domain.enums.Sexo;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.Embedded;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import java.time.LocalDate;
 
 @Embeddable
@@ -18,7 +17,7 @@ public class Paciente {
     
     private Sexo sexo;
     
-    private Integer gestante;
+    private PeriodoGestacional gestante;
     
     
     private RacaCor racaCor;
@@ -46,8 +45,8 @@ public class Paciente {
     public Sexo getSexo() { return sexo; }
     public void setSexo(Sexo sexo) { this.sexo = sexo; }
     
-    public Integer getGestante() { return gestante; }
-    public void setGestante(Integer gestante) { this.gestante = gestante; }
+    public PeriodoGestacional getGestante() { return gestante; }
+    public void setGestante(PeriodoGestacional gestante) { this.gestante = gestante; }
     
     public RacaCor getRacaCor() { return racaCor; }
     public void setRacaCor(RacaCor racaCor) { this.racaCor = racaCor; }

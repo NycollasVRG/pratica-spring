@@ -4,8 +4,6 @@ import com.pratica.notificacao.domain.enums.CriterioConfirmacao;
 import com.pratica.notificacao.domain.enums.EvolucaoCaso;
 import com.pratica.notificacao.domain.enums.SimNaoIgnorado;
 import jakarta.persistence.Embeddable;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import java.time.LocalDate;
 
 @Embeddable
