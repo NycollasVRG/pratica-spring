@@ -45,6 +45,9 @@ mvnw.cmd spring-boot:run      # Windows
 # 3) abre o front-end
 #    http://localhost:8080
 #    Credenciais padrão: admin / admin123
+
+# 4) Acesse o Swagger UI para testar a API
+#    http://localhost:8080/swagger-ui.html
 ```
 
 Alternativa com tudo em container (aplicação + banco):
