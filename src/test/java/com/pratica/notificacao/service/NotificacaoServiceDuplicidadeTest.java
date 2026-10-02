@@ -1,26 +1,29 @@
 package com.pratica.notificacao.service;
 
 import com.pratica.notificacao.common.ClockConfig;
-import com.pratica.notificacao.common.Result;
 import com.pratica.notificacao.domain.Notificacao;
 import com.pratica.notificacao.domain.Paciente;
 import com.pratica.notificacao.domain.enums.TipoNotificacao;
+import com.pratica.notificacao.dto.request.NotificacaoFilterDTO;
 import com.pratica.notificacao.dto.response.NotificacaoResponseDTO;
 import com.pratica.notificacao.dto.response.PaginaRespostaDTO;
-import com.pratica.notificacao.exception.ErroServico;
+import com.pratica.notificacao.mapper.NotificacaoMapper;
+import com.pratica.notificacao.mapper.NotificacaoMapperImpl;
 import com.pratica.notificacao.repository.NotificacaoRepository;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
 import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
-@Import({NotificacaoService.class, ClockConfig.class})
+@Import({NotificacaoService.class, ClockConfig.class, NotificacaoMapperImpl.class})
 class NotificacaoServiceDuplicidadeTest {
 
     @Autowired
@@ -55,30 +58,17 @@ class NotificacaoServiceDuplicidadeTest {
     void duplicadasTrueComposComFiltroDeUf() {
         semear();
 
-        Result<PaginaRespostaDTO<NotificacaoResponseDTO>, ErroServico> resultado = servico.listar(
-                "SP", null, null, null, null, null, true, 0, 10, "numeroNotificacao", "asc");
+        NotificacaoFilterDTO filtro = new NotificacaoFilterDTO("SP", null, null, null, null, null, true);
+        PaginaRespostaDTO<NotificacaoResponseDTO> envelope = servico.listar(filtro, PageRequest.of(0, 10, Sort.by(Sort.Direction.ASC, "numeroNotificacao")));
 
-        assertThat(resultado.isOk()).isTrue();
-        PaginaRespostaDTO<NotificacaoResponseDTO> envelope = envelopeDe(resultado);
         assertThat(envelope.conteudo()).isEmpty();
     }
 
     // ------------------------------------------------------------------
 
     private PaginaRespostaDTO<NotificacaoResponseDTO> listar(boolean duplicadas) {
-        Result<PaginaRespostaDTO<NotificacaoResponseDTO>, ErroServico> resultado = servico.listar(
-                null, null, null, null, null, null, duplicadas, 0, 10, "numeroNotificacao", "asc");
-
-        return envelopeDe(resultado);
-    }
-
-    @SuppressWarnings("unchecked")
-    private static PaginaRespostaDTO<NotificacaoResponseDTO> envelopeDe(
-            Result<PaginaRespostaDTO<NotificacaoResponseDTO>, ErroServico> resultado) {
-        if (!(resultado instanceof Result.Ok<?, ?> ok)) {
-            throw new AssertionError("esperava Ok, mas veio: " + resultado);
-        }
-        return (PaginaRespostaDTO<NotificacaoResponseDTO>) ok.value();
+        NotificacaoFilterDTO filtro = new NotificacaoFilterDTO(null, null, null, null, null, null, duplicadas);
+        return servico.listar(filtro, PageRequest.of(0, 10, Sort.by(Sort.Direction.ASC, "numeroNotificacao")));
     }
 
     private void semear() {

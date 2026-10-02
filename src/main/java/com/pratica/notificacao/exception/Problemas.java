@@ -26,13 +26,13 @@ public final class Problemas {
 
     public static ResponseEntity<Object> resposta(ErroServico erro) {
         if (erro instanceof ErroServico.NaoEncontrado naoEncontrado) {
-            return montar(org.springframework.http.HttpStatus.NOT_FOUND, naoEncontrado.detalhe(), List.of());
+            return montar(org.springframework.http.HttpStatus.NOT_FOUND, naoEncontrado.getMessage(), List.of());
         }
         if (erro instanceof ErroServico.Conflito conflito) {
-            return montar(org.springframework.http.HttpStatus.CONFLICT, conflito.detalhe(), List.of());
+            return montar(org.springframework.http.HttpStatus.CONFLICT, conflito.getMessage(), List.of());
         }
         ErroServico.ParametroInvalido invalido = (ErroServico.ParametroInvalido) erro;
-        return montar(org.springframework.http.HttpStatus.BAD_REQUEST, "Requisição inválida", invalido.violacoes());
+        return montar(org.springframework.http.HttpStatus.BAD_REQUEST, "Requisição inválida", invalido.getViolacoes());
     }
 
     public static URI urn(int status) {

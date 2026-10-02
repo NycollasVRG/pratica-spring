@@ -1,7 +1,9 @@
-"use strict";
-
-
-const API = "/notificacao";
+import { state, auth } from './state.js';
+import { API, enviar, mostrarMensagem } from './api.js';
+import { 
+  $, el, limpar, definir, valorCampo, dataCampo, 
+  inteiroCampo, enumCampo, formatarData, popular 
+} from './dom.js';
 
 const UFS = [
   "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS",
@@ -26,161 +28,40 @@ const ORDENACOES = [
   { valor: "numeroNotificacao", rotulo: "Número" },
   { valor: "ufNotificacao", rotulo: "UF da notificação" },
   { valor: "municipioNotificacao", rotulo: "Município da notificação" },
-  { valor: "nomePaciente", rotulo: "Nome do paciente" },
-  { valor: "dataNascimento", rotulo: "Data de nascimento" }
+  { valor: "paciente.nomePaciente", rotulo: "Nome do paciente" },
+  { valor: "paciente.dataNascimento", rotulo: "Data de nascimento" }
 ];
 
-const estado = {
-  pagina: 0,
-  tamanho: 10,
-  totalPaginas: 0,
-  modo: "criar",          // "criar" | "editar"
-  numeroOriginal: null    // usado na URL do PUT
-};
-
-// ---------------------------------------------------------------- helpers DOM
-
-function el(nome, atributos, ...filhos) {
-  const no = document.createElement(nome);
-  if (atributos) {
-    for (const [chave, valor] of Object.entries(atributos)) {
-      no.setAttribute(chave, valor);
-    }
-  }
-  for (const filho of filhos) {
-    if (filho === null || filho === undefined) continue;
-    if (filho instanceof Node) {
-      no.appendChild(filho);
-    } else {
-      no.appendChild(document.createTextNode(String(filho)));
-    }
-  }
-  return no;
-}
-
-function $(id) {
-  return document.getElementById(id);
-}
-
-function limpar(no) {
-  no.replaceChildren();
-}
-
-function definir(id, valor) {
-  $(id).value = valor === null || valor === undefined ? "" : String(valor);
-}
-
-function valorCampo(id) {
-  const texto = $(id).value.trim();
-  return texto === "" ? null : texto;
-}
-
-function dataCampo(id) {
-  const valor = $(id).value;
-  return valor === "" ? null : valor;
-}
-
-function inteiroCampo(id) {
-  const valor = $(id).value;
-  return valor === "" ? null : Number.parseInt(valor, 10);
-}
-
-function enumCampo(id) {
-  return valorCampo(id);
-}
-
-function formatarData(iso) {
-  if (!iso) return "—";
-  const partes = String(iso).split("-");
-  if (partes.length !== 3) return String(iso);
-  return `${partes[2]}/${partes[1]}/${partes[0]}`;
-}
-
-function popular(id, opcoes, rotuloVazio) {
-  const select = $(id);
-  if (!select) return;
-  limpar(select);
-  if (rotuloVazio !== undefined) {
-    select.appendChild(el("option", { value: "" }, rotuloVazio));
-  }
-  for (const opcao of opcoes) {
-    const valor = typeof opcao === "string" ? opcao : opcao.valor;
-    const rotulo = typeof opcao === "string"
-      ? opcao.replaceAll("_", " ")
-      : opcao.rotulo;
-    select.appendChild(el("option", { value: valor }, rotulo));
-  }
-}
-
-// ---------------------------------------------------------------- mensagens
-
-function mostrarMensagem(tipo, titulo, detalhes) {
-  const caixa = $("mensagens");
-  limpar(caixa);
-  caixa.setAttribute("class", tipo);
-  caixa.appendChild(el("strong", null, titulo));
-  if (detalhes) {
-    caixa.appendChild(el("p", null, detalhes));
-  }
-}
-
-function mostrarProblema(problema) {
-  const caixa = $("mensagens");
-  limpar(caixa);
-  caixa.setAttribute("class", "erro");
-  const titulo = (problema && problema.title) ? problema.title : "Erro na requisição";
-  caixa.appendChild(el("strong", null, titulo));
-  if (problema && problema.detail) {
-    caixa.appendChild(el("p", null, problema.detail));
-  }
-  if (problema && Array.isArray(problema.errors) && problema.errors.length > 0) {
-    const lista = el("ul");
-    for (const erro of problema.errors) {
-      const campo = erro.campo || "—";
-      const mensagem = erro.mensagem || "";
-      lista.appendChild(el("li", null, `${campo}: ${mensagem}`));
-    }
-    caixa.appendChild(lista);
-  }
-}
-
-function mostrarErroRede(erro) {
-  mostrarMensagem("erro", "Falha de comunicação",
-    "Não foi possível falar com a API. Verifique se o servidor está no ar. (" + erro + ")");
-}
-
-// ---------------------------------------------------------------- requisições
-
-async function enviar(caminho, opcoes) {
-  try {
-    const resposta = await fetch(caminho, opcoes);
-    if (resposta.status === 204) {
-      return { ok: true, dados: null };
-    }
-    let corpo = null;
-    try {
-      corpo = await resposta.json();
-    } catch (interpretao) {
-      corpo = null;
-    }
-    if (!resposta.ok) {
-      if (corpo) {
-        mostrarProblema(corpo);
-      } else {
-        mostrarMensagem("erro", `Erro ${resposta.status}`,
-          "A resposta veio sem corpo problem+json.");
+// ---------------------------------------------------------------- Auth UI
+function configurarAuthUI() {
+  const containerAuth = $("auth-container");
+  if (!containerAuth) return;
+  limpar(containerAuth);
+  
+  if (auth.isLogado()) {
+    const btnLogout = el("button", { type: "button" }, "Sair (Logout)");
+    btnLogout.addEventListener("click", () => {
+      auth.logout();
+      configurarAuthUI();
+      carregarLista();
+    });
+    containerAuth.appendChild(btnLogout);
+  } else {
+    const btnLogin = el("button", { type: "button" }, "Login");
+    btnLogin.addEventListener("click", () => {
+      const usuario = prompt("Usuário:");
+      const senha = prompt("Senha:");
+      if (usuario && senha) {
+        auth.setCredenciais(usuario, senha);
+        configurarAuthUI();
+        carregarLista();
       }
-      return { ok: false, status: resposta.status, problema: corpo };
-    }
-    return { ok: true, dados: corpo };
-  } catch (erroDeRede) {
-    mostrarErroRede(erroDeRede);
-    return { ok: false };
+    });
+    containerAuth.appendChild(btnLogin);
   }
 }
 
 // ---------------------------------------------------------------- listagem
-
 function parametrosLista() {
   const params = new URLSearchParams();
   const filtroUf = valorCampo("filtroUf");
@@ -196,12 +77,18 @@ function parametrosLista() {
   if (sexo) params.set("sexo", sexo);
   if (dataInicio) params.set("dataInicio", dataInicio);
   if (dataFim) params.set("dataFim", dataFim);
-  if ($("filtroDuplicadas").checked) params.set("duplicadas", "true");
+  
+  // O Spring espera o booleano (ou falha ao vincular no record caso omitido)
+  params.set("duplicadas", $("filtroDuplicadas").checked ? "true" : "false");
 
-  params.set("pagina", String(estado.pagina));
-  params.set("tamanho", String(estado.tamanho));
-  params.set("ordenarPor", valorCampo("ordenarPor") || "dataNotificacao");
-  params.set("direcao", valorCampo("direcao") || "desc");
+  // Ajustado para o formato padrão do Spring Data Pageable
+  params.set("page", String(state.pagina));
+  params.set("size", String(state.tamanho));
+  
+  const ordenarPor = valorCampo("ordenarPor") || "dataNotificacao";
+  const direcao = valorCampo("direcao") || "desc";
+  params.set("sort", `${ordenarPor},${direcao}`);
+  
   return params;
 }
 
@@ -209,19 +96,25 @@ async function carregarLista() {
   const resultado = await enviar(`${API}?${parametrosLista()}`, {
     method: "GET"
   });
-  if (!resultado.ok) return;
+  if (!resultado.ok) {
+     if(resultado.status === 401) {
+         renderizarTabela([]);
+         $("info-pagina").textContent = "Faça login para ver as notificações.";
+     }
+     return;
+  }
 
   const envelope = resultado.dados || {};
   const conteudo = Array.isArray(envelope.conteudo) ? envelope.conteudo : [];
 
   // página além do intervalo (filtros encolheram o resultado) → volta para 0
-  if (conteudo.length === 0 && envelope.totalElementos > 0 && estado.pagina > 0) {
-    estado.pagina = 0;
+  if (conteudo.length === 0 && envelope.totalElementos > 0 && state.pagina > 0) {
+    state.pagina = 0;
     await carregarLista();
     return;
   }
 
-  estado.totalPaginas = envelope.totalPaginas || 0;
+  state.totalPaginas = envelope.totalPaginas || 0;
   renderizarTabela(conteudo);
   renderizarPaginacao(envelope);
 }
@@ -274,7 +167,7 @@ function celulaAcoes(item) {
 function renderizarPaginacao(envelope) {
   const total = envelope.totalPaginas || 0;
   const totalElementos = envelope.totalElementos || 0;
-  const pagina = envelope.pagina !== undefined ? envelope.pagina : estado.pagina;
+  const pagina = envelope.pagina !== undefined ? envelope.pagina : state.pagina;
 
   $("info-pagina").textContent =
     `Página ${total === 0 ? 0 : pagina + 1} de ${total} — ${totalElementos} registro(s)`;
@@ -289,9 +182,9 @@ async function salvar(evento) {
   evento.preventDefault();
 
   const payload = montarPayload();
-  const emEdicao = estado.modo === "editar";
+  const emEdicao = state.modo === "editar";
   const caminho = emEdicao
-    ? `${API}/${encodeURIComponent(estado.numeroOriginal)}`
+    ? `${API}/${encodeURIComponent(state.numeroOriginal)}`
     : API;
 
   const resultado = await enviar(caminho, {
@@ -445,8 +338,8 @@ function preencherForm(item) {
     limparInvestigacao();
   }
 
-  estado.modo = "editar";
-  estado.numeroOriginal = item.numeroNotificacao;
+  state.modo = "editar";
+  state.numeroOriginal = item.numeroNotificacao;
   $("titulo-form").textContent = `Editar notificação nº ${item.numeroNotificacao}`;
   limpar($("mensagens"));
   $("formulario").scrollIntoView({ behavior: "smooth", block: "start" });
@@ -471,8 +364,8 @@ function limparInvestigacao() {
 function limparForm() {
   $("form-notificacao").reset();
   limparInvestigacao();
-  estado.modo = "criar";
-  estado.numeroOriginal = null;
+  state.modo = "criar";
+  state.numeroOriginal = null;
   $("titulo-form").textContent = "Nova notificação";
 }
 
@@ -522,7 +415,7 @@ function vincularEventos() {
 
   $("form-filtros").addEventListener("submit", (evento) => {
     evento.preventDefault();
-    estado.pagina = 0;
+    state.pagina = 0;
     carregarLista();
   });
 
@@ -530,31 +423,33 @@ function vincularEventos() {
     $("form-filtros").reset();
     $("ordenarPor").value = "dataNotificacao";
     $("direcao").value = "desc";
-    estado.pagina = 0;
+    state.pagina = 0;
     carregarLista();
   });
 
   $("btn-anterior").addEventListener("click", () => {
-    if (estado.pagina > 0) {
-      estado.pagina -= 1;
+    if (state.pagina > 0) {
+      state.pagina -= 1;
       carregarLista();
     }
   });
 
   $("btn-proximo").addEventListener("click", () => {
-    if (estado.pagina < estado.totalPaginas - 1) {
-      estado.pagina += 1;
+    if (state.pagina < state.totalPaginas - 1) {
+      state.pagina += 1;
       carregarLista();
     }
   });
 
   $("tamanhoPagina").addEventListener("change", () => {
-    estado.tamanho = Number.parseInt($("tamanhoPagina").value, 10);
-    estado.pagina = 0;
+    state.tamanho = Number.parseInt($("tamanhoPagina").value, 10);
+    state.pagina = 0;
     carregarLista();
   });
 }
 
+// Initialization flow
 popularSelects();
 vincularEventos();
+configurarAuthUI();
 carregarLista();

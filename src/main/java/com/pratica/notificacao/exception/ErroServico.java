@@ -2,17 +2,34 @@ package com.pratica.notificacao.exception;
 
 import java.util.List;
 
+public abstract class ErroServico extends RuntimeException {
 
-public sealed interface ErroServico
-        permits ErroServico.NaoEncontrado, ErroServico.Conflito, ErroServico.ParametroInvalido {
+    public ErroServico(String message) {
+        super(message);
+    }
 
-    record NaoEncontrado(String detalhe) implements ErroServico {}
+    public static class NaoEncontrado extends ErroServico {
+        public NaoEncontrado(String detalhe) {
+            super(detalhe);
+        }
+    }
 
-    record Conflito(String detalhe) implements ErroServico {}
+    public static class Conflito extends ErroServico {
+        public Conflito(String detalhe) {
+            super(detalhe);
+        }
+    }
 
-    record ParametroInvalido(List<ViolacaoCampo> violacoes) implements ErroServico {
-        public ParametroInvalido {
-            violacoes = List.copyOf(violacoes);
+    public static class ParametroInvalido extends ErroServico {
+        private final List<ViolacaoCampo> violacoes;
+
+        public ParametroInvalido(List<ViolacaoCampo> violacoes) {
+            super("Parâmetro Inválido");
+            this.violacoes = List.copyOf(violacoes);
+        }
+
+        public List<ViolacaoCampo> getViolacoes() {
+            return violacoes;
         }
     }
 }

@@ -28,8 +28,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import tools.jackson.databind.exc.InvalidFormatException;
-
-
+import tools.jackson.databind.exc.MismatchedInputException;
 @RestControllerAdvice
 public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
@@ -175,6 +174,30 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
                 "Conflito: o recurso já existe ou está em uso por outra operação", List.of());
         return handleExceptionInternal(ex, corpo, new HttpHeaders(),
                 org.springframework.http.HttpStatus.CONFLICT, request);
+    }
+
+    @ExceptionHandler(ErroServico.NaoEncontrado.class)
+    public ResponseEntity<Object> tratarNaoEncontrado(ErroServico.NaoEncontrado ex, WebRequest request) {
+        ProblemDetail corpo = Problemas.problemDetail(org.springframework.http.HttpStatus.NOT_FOUND,
+                ex.getMessage(), List.of());
+        return handleExceptionInternal(ex, corpo, new HttpHeaders(),
+                org.springframework.http.HttpStatus.NOT_FOUND, request);
+    }
+
+    @ExceptionHandler(ErroServico.Conflito.class)
+    public ResponseEntity<Object> tratarConflito(ErroServico.Conflito ex, WebRequest request) {
+        ProblemDetail corpo = Problemas.problemDetail(org.springframework.http.HttpStatus.CONFLICT,
+                ex.getMessage(), List.of());
+        return handleExceptionInternal(ex, corpo, new HttpHeaders(),
+                org.springframework.http.HttpStatus.CONFLICT, request);
+    }
+
+    @ExceptionHandler(ErroServico.ParametroInvalido.class)
+    public ResponseEntity<Object> tratarParametroInvalido(ErroServico.ParametroInvalido ex, WebRequest request) {
+        ProblemDetail corpo = Problemas.problemDetail(org.springframework.http.HttpStatus.BAD_REQUEST,
+                "Requisição inválida", ex.getViolacoes());
+        return handleExceptionInternal(ex, corpo, new HttpHeaders(),
+                org.springframework.http.HttpStatus.BAD_REQUEST, request);
     }
 
     @ExceptionHandler(BindException.class)

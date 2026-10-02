@@ -7,9 +7,12 @@
   <link rel="stylesheet" href="estilo.css">
 </head>
 <body>
-  <header>
-    <h1>Sistema de Notificação de Agravos</h1>
-    <p>CRUD de notificações — REST + Spring Boot (RFC 9457)</p>
+  <header style="display: flex; justify-content: space-between; align-items: center;">
+    <div>
+      <h1>Sistema de Notificação de Agravos</h1>
+      <p>CRUD de notificações</p>
+    </div>
+    <div id="auth-container"></div>
   </header>
 
   <main>
@@ -45,7 +48,7 @@
           </label>
         </div>
         <div class="linha-acoes">
-          <label class="check"><input type="checkbox" id="filtroDuplicadas"> Somente duplicadas (RN01, ±3 dias)</label>
+          <label class="check"><input type="checkbox" id="filtroDuplicadas"> Somente duplicadas</label>
           <button type="submit">Filtrar</button>
           <button type="button" id="btn-limpar-filtros">Limpar filtros</button>
         </div>
@@ -138,7 +141,7 @@
             <label>Sexo *
               <select id="sexo" required></select>
             </label>
-            <label>Gestante (RN02)
+            <label>Gestante
               <select id="gestante"></select>
             </label>
             <label>Raça/cor
@@ -160,7 +163,7 @@
         </fieldset>
 
         <fieldset>
-          <legend>Residência (RN03)</legend>
+          <legend>Residência</legend>
           <div class="grade">
             <label>País
               <input type="text" id="paisResidencia" placeholder="Brasil (em branco = Brasil)" autocomplete="off">
@@ -261,6 +264,6 @@
     <p>* campos obrigatórios — erros da API aparecem acima, no formato problem+json (RFC 9457).</p>
   </footer>
 
-  <script src="app.js"></script>
+  <script type="module" src="js/main.js"></script>
 </body>
 </html>

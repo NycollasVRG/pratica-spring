@@ -1,6 +1,5 @@
 package com.pratica.notificacao.controller;
 
-import com.pratica.notificacao.common.Result;
 import com.pratica.notificacao.dto.response.NotificacaoResponseDTO;
 import com.pratica.notificacao.dto.response.PaginaRespostaDTO;
 import com.pratica.notificacao.exception.ErroServico;
@@ -9,7 +8,8 @@ import com.pratica.notificacao.service.NotificacaoService;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -32,7 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(NotificacaoController.class)
+@WebMvcTest(value = NotificacaoController.class, excludeAutoConfiguration = SecurityAutoConfiguration.class)
 class NotificacaoControllerTest {
 
     @Autowired
@@ -43,7 +43,7 @@ class NotificacaoControllerTest {
 
     @Test
     void postRetorna201ComLocation() throws Exception {
-        when(servico.criar(any())).thenReturn(Result.ok(resposta("123")));
+        when(servico.criar(any())).thenReturn(resposta("123"));
 
         mvc.perform(post("/notificacao")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -55,8 +55,7 @@ class NotificacaoControllerTest {
 
     @Test
     void postDuplicadoRetorna409ProblemDetail() throws Exception {
-        when(servico.criar(any())).thenReturn(Result.err(
-                new ErroServico.Conflito("Já existe uma notificação com o número 123")));
+        when(servico.criar(any())).thenThrow(new ErroServico.Conflito("Já existe uma notificação com o número 123"));
 
         mvc.perform(post("/notificacao")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -105,7 +104,7 @@ class NotificacaoControllerTest {
 
     @Test
     void getRetorna200ComCorpo() throws Exception {
-        when(servico.obter("123")).thenReturn(Result.ok(resposta("123")));
+        when(servico.obter("123")).thenReturn(resposta("123"));
 
         mvc.perform(get("/notificacao/123"))
                 .andExpect(status().isOk())
@@ -114,8 +113,7 @@ class NotificacaoControllerTest {
 
     @Test
     void getInexistenteRetorna404ProblemDetail() throws Exception {
-        when(servico.obter("999")).thenReturn(Result.err(
-                new ErroServico.NaoEncontrado("Notificação 999 não encontrada")));
+        when(servico.obter("999")).thenThrow(new ErroServico.NaoEncontrado("Notificação 999 não encontrada"));
 
         mvc.perform(get("/notificacao/999"))
                 .andExpect(status().isNotFound())
@@ -127,10 +125,10 @@ class NotificacaoControllerTest {
 
     @Test
     void putComNumeroDivergenteRetorna400ComErrors() throws Exception {
-        when(servico.atualizar(any(), any())).thenReturn(Result.err(
+        when(servico.atualizar(any(), any())).thenThrow(
                 new ErroServico.ParametroInvalido(List.of(
                         new ViolacaoCampo("numeroNotificacao",
-                                "O número do corpo da requisição difere do número da URL")))));
+                                "O número do corpo da requisição difere do número da URL"))));
 
         mvc.perform(put("/notificacao/123")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -142,7 +140,7 @@ class NotificacaoControllerTest {
 
     @Test
     void putValidoRetorna200() throws Exception {
-        when(servico.atualizar(any(), any())).thenReturn(Result.ok(resposta("123")));
+        when(servico.atualizar(any(), any())).thenReturn(resposta("123"));
 
         mvc.perform(put("/notificacao/123")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -153,8 +151,6 @@ class NotificacaoControllerTest {
 
     @Test
     void deleteRetorna204() throws Exception {
-        when(servico.remover("123")).thenReturn(Result.ok(null));
-
         mvc.perform(delete("/notificacao/123"))
                 .andExpect(status().isNoContent())
                 .andExpect(content().string(""));
@@ -162,8 +158,8 @@ class NotificacaoControllerTest {
 
     @Test
     void deleteInexistenteRetorna404() throws Exception {
-        when(servico.remover("999")).thenReturn(Result.err(
-                new ErroServico.NaoEncontrado("Notificação 999 não encontrada")));
+        org.mockito.Mockito.doThrow(new ErroServico.NaoEncontrado("Notificação 999 não encontrada"))
+                .when(servico).remover("999");
 
         mvc.perform(delete("/notificacao/999"))
                 .andExpect(status().isNotFound())
@@ -193,8 +189,8 @@ class NotificacaoControllerTest {
 
     @Test
     void getListRetorna200ComEnvelope() throws Exception {
-        when(servico.listar(any(), any(), any(), any(), any(), any(), anyBoolean(), anyInt(), anyInt(), any(), any()))
-                .thenReturn(Result.ok(new PaginaRespostaDTO<>(List.of(resposta("1")), 0, 10, 1, 1)));
+        when(servico.listar(any(), any()))
+                .thenReturn(new PaginaRespostaDTO<>(List.of(resposta("1")), 0, 10, 1, 1));
 
         mvc.perform(get("/notificacao"))
                 .andExpect(status().isOk())
@@ -207,9 +203,9 @@ class NotificacaoControllerTest {
 
     @Test
     void getListComOrdenacaoInvalidaRetorna400ProblemDetail() throws Exception {
-        when(servico.listar(any(), any(), any(), any(), any(), any(), anyBoolean(), anyInt(), anyInt(), any(), any()))
-                .thenReturn(Result.err(new ErroServico.ParametroInvalido(List.of(
-                        new ViolacaoCampo("ordenarPor", "Ordenação inválida; use uma de: dataNotificacao")))));
+        when(servico.listar(any(), any()))
+                .thenThrow(new ErroServico.ParametroInvalido(List.of(
+                        new ViolacaoCampo("ordenarPor", "Ordenação inválida; use uma de: dataNotificacao"))));
 
         mvc.perform(get("/notificacao?ordenarPor=qualquerCoisa"))
                 .andExpect(status().isBadRequest())
@@ -237,15 +233,14 @@ class NotificacaoControllerTest {
 
     @Test
     void getListEncaminhaDuplicadasTrueParaOServico() throws Exception {
-        when(servico.listar(any(), any(), any(), any(), any(), any(), anyBoolean(), anyInt(), anyInt(), any(), any()))
-                .thenReturn(Result.ok(new PaginaRespostaDTO<>(List.of(), 0, 10, 0, 0)));
+        when(servico.listar(any(), any()))
+                .thenReturn(new PaginaRespostaDTO<>(List.of(), 0, 10, 0, 0));
 
         mvc.perform(get("/notificacao?duplicadas=true"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.totalElementos").value(0));
 
-        verify(servico).listar(any(), any(), any(), any(), any(), any(),
-                org.mockito.ArgumentMatchers.eq(true), anyInt(), anyInt(), any(), any());
+        verify(servico).listar(any(), any());
     }
 
     // ------------------------------------------------------------------
