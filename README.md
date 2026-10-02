@@ -1,8 +1,8 @@
 # Prática Spring — API de Notificação de Agravos (SINAN)
 
 **Equipe:**
-- **Nycollas Vinicius** — matrícula: `000000000`
-- **Carlos Victor** — matrícula: `000000000`
+- **Nycollas Vinicius** — matrícula: `202422010021`
+- **Carlos Victor** — matrícula: `202512010016`
 
 CRUD REST completo de notificações de agravos, com regras de negócio (RN01–RN03),
 padrão de erro **RFC 9457** (`application/problem+json`), paginação/ordenação com
@@ -187,11 +187,25 @@ validação ou parâmetros de consulta inválidos.
 
 ---
 
-## 6. Exemplos com `curl`
+## 6. API Collection e Exemplos (Postman / Insomnia)
+
+Para facilitar os testes da API e simular a integração com o back-end, criamos uma **Collection completa** com payloads prontos para os 8 casos de uso mais importantes do sistema (incluindo tratamento das regras de negócio RN01 e RN02, respostas RFC 9457 e métodos de paginação). A Collection já possui a Autenticação HTTP Basic (`admin/admin123`) embutida.
+
+> **Onde encontrar:** O arquivo está salvo na pasta raiz do repositório em `collection/SINAN_API_postman_collection.json`.
+
+**Como utilizar:**
+1. Abra o seu API Client preferido (Postman, Insomnia, Hoppscotch, Bruno, etc.).
+2. Procure pelo botão **Import** e selecione o arquivo JSON que está na pasta `collection/`.
+3. Pronto! As requisições aparecerão organizadas na barra lateral para você disparar com 1 clique (certifique-se de que a API está rodando na porta `8080`).
+
+### Exemplos rápidos com `curl` (Via Terminal)
+
+Caso você prefira ferramentas de linha de comando:
 
 ```bash
 # criar (201 + Location)
 curl -i -X POST http://localhost:8080/notificacao \
+  -u admin:admin123 \
   -H "Content-Type: application/json" \
   -d '{
     "numeroNotificacao": "123",
@@ -210,25 +224,14 @@ curl -i -X POST http://localhost:8080/notificacao \
     }
   }'
 
-# duplicado (409 problem+json)
-# ... repetir o POST acima
+# listar: ordenado por nome do paciente, só duplicadas da PB
+curl -u admin:admin123 "http://localhost:8080/notificacao?uf=PB&duplicadas=true&sort=paciente.nomePaciente,asc&page=0&size=10"
 
 # obter (200)
-curl http://localhost:8080/notificacao/123
-
-# listar: ordenado por nome do paciente, só duplicadas da PB
-curl "http://localhost:8080/notificacao?uf=PB&duplicadas=true&ordenarPor=nomePaciente&direcao=asc&pagina=0&tamanho=10"
-
-# ordenação fora da allowlist (400 problem+json)
-curl "http://localhost:8080/notificacao?ordenarPor=senha"
-
-# atualizar (200) — número do corpo deve ser igual ao da URL
-curl -X PUT http://localhost:8080/notificacao/123 \
-  -H "Content-Type: application/json" \
-  -d '{ ... "numeroNotificacao": "123" ... }'
+curl -u admin:admin123 http://localhost:8080/notificacao/123
 
 # excluir (204)
-curl -i -X DELETE http://localhost:8080/notificacao/123
+curl -i -X DELETE -u admin:admin123 http://localhost:8080/notificacao/123
 ```
 
 ---

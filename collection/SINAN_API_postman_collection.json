@@ -1,0 +1,244 @@
+{
+  "info": {
+    "name": "SINAN - API de Notificação",
+    "description": "Collection completa com os principais casos de uso para testar as regras de negócio, retornos RFC 9457 e segurança da API de Notificações de Agravos.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "basic",
+    "basic": [
+      {
+        "key": "password",
+        "value": "admin123",
+        "type": "string"
+      },
+      {
+        "key": "username",
+        "value": "admin",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "1. Criar Notificação (Padrão)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"numeroNotificacao\": \"REQ-1001\",\n  \"tipoNotificacao\": \"INDIVIDUAL\",\n  \"agravoDoenca\": \"Dengue\",\n  \"dataNotificacao\": \"2026-10-01\",\n  \"ufNotificacao\": \"SP\",\n  \"municipioNotificacao\": \"São Paulo\",\n  \"unidadeSaudeNotificadora\": \"UBS Pinheiros\",\n  \"dataPrimeirosSintomas\": \"2026-09-28\",\n  \"paciente\": {\n    \"nomePaciente\": \"Carlos Eduardo Silva\",\n    \"dataNascimento\": \"1985-04-12\",\n    \"sexo\": \"MASCULINO\",\n    \"racaCor\": \"PARDA\",\n    \"escolaridade\": 12,\n    \"numeroCartaoSus\": \"123456789012345\",\n    \"nomeMae\": \"Ana Lucia Silva\",\n    \"telefone\": \"11999998888\",\n    \"endereco\": {\n      \"ufResidencia\": \"SP\",\n      \"municipioResidencia\": \"São Paulo\",\n      \"bairroResidencia\": \"Pinheiros\",\n      \"logradouroResidencia\": \"Rua das Flores\",\n      \"numeroResidencia\": \"123\",\n      \"cepResidencia\": \"05400-000\",\n      \"zonaResidencia\": \"URBANA\"\n    }\n  }\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/notificacao",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "notificacao"
+          ]
+        }
+      }
+    },
+    {
+      "name": "2. Criar Notificação (Mulher Gestante - RN02)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"numeroNotificacao\": \"REQ-1002\",\n  \"tipoNotificacao\": \"INDIVIDUAL\",\n  \"agravoDoenca\": \"Zika Vírus\",\n  \"dataNotificacao\": \"2026-10-02\",\n  \"ufNotificacao\": \"RJ\",\n  \"municipioNotificacao\": \"Rio de Janeiro\",\n  \"unidadeSaudeNotificadora\": \"Clínica da Família\",\n  \"paciente\": {\n    \"nomePaciente\": \"Juliana Souza\",\n    \"idade\": 28,\n    \"sexo\": \"FEMININO\",\n    \"gestante\": \"PRIMEIRO_TRIMESTRE\",\n    \"endereco\": {\n      \"ufResidencia\": \"RJ\",\n      \"municipioResidencia\": \"Rio de Janeiro\"\n    }\n  }\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/notificacao",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "notificacao"
+          ]
+        }
+      }
+    },
+    {
+      "name": "3. Erro de Validação (RFC 9457)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"numeroNotificacao\": \"REQ-ERRO-1\",\n  \"tipoNotificacao\": \"INDIVIDUAL\",\n  \"agravoDoenca\": \"\"\n  // Propósito: omitir campos obrigatórios como paciente e datas para disparar o ProblemDetail (400 Bad Request)\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/notificacao",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "notificacao"
+          ]
+        }
+      }
+    },
+    {
+      "name": "4. Atualizar Notificação (Inserir Investigação)",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"numeroNotificacao\": \"REQ-1001\",\n  \"tipoNotificacao\": \"INDIVIDUAL\",\n  \"agravoDoenca\": \"Dengue\",\n  \"dataNotificacao\": \"2026-10-01\",\n  \"ufNotificacao\": \"SP\",\n  \"municipioNotificacao\": \"São Paulo\",\n  \"unidadeSaudeNotificadora\": \"UBS Pinheiros\",\n  \"paciente\": {\n    \"nomePaciente\": \"Carlos Eduardo Silva\",\n    \"sexo\": \"MASCULINO\",\n    \"idade\": 41,\n    \"endereco\": {\n      \"ufResidencia\": \"SP\",\n      \"municipioResidencia\": \"São Paulo\"\n    }\n  },\n  \"investigacao\": {\n    \"dataInvestigacao\": \"2026-10-03\",\n    \"classificacaoFinal\": 1,\n    \"criterioConfirmacaoDescarte\": \"LABORATORIAL\",\n    \"evolucaoCaso\": \"CURA\",\n    \"dataEncerramento\": \"2026-10-15\"\n  }\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/notificacao/REQ-1001",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "notificacao",
+            "REQ-1001"
+          ]
+        }
+      }
+    },
+    {
+      "name": "5. Obter Notificação Específica",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/notificacao/REQ-1001",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "notificacao",
+            "REQ-1001"
+          ]
+        }
+      }
+    },
+    {
+      "name": "6. Listar Notificações (Paginado e Ordenado)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/notificacao?page=0&size=10&sort=dataNotificacao,desc",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "notificacao"
+          ],
+          "query": [
+            {
+              "key": "page",
+              "value": "0",
+              "description": "Página atual (baseada em 0)"
+            },
+            {
+              "key": "size",
+              "value": "10",
+              "description": "Itens por página"
+            },
+            {
+              "key": "sort",
+              "value": "dataNotificacao,desc",
+              "description": "Critério de ordenação"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "7. Filtrar Notificações (Somente Duplicadas na UF)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/notificacao?uf=SP&duplicadas=true&page=0&size=5",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "notificacao"
+          ],
+          "query": [
+            {
+              "key": "uf",
+              "value": "SP",
+              "description": "Filtro pela sigla da UF"
+            },
+            {
+              "key": "duplicadas",
+              "value": "true",
+              "description": "Ativa RN01 - Verifica se existem notificações do mesmo agravo na mesma janela de 3 dias"
+            },
+            {
+              "key": "page",
+              "value": "0"
+            },
+            {
+              "key": "size",
+              "value": "5"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "8. Excluir Notificação",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/notificacao/REQ-1002",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "notificacao",
+            "REQ-1002"
+          ]
+        }
+      }
+    }
+  ]
+}
