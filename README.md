@@ -1,10 +1,8 @@
 # Prática Spring — API de Notificação de Agravos (SINAN)
 
 **Equipe:**
-- **NOME 1** — matrícula: `000000000`
-- **NOME 2** — matrícula: `000000000`
-
-> Substitua os nomes e matrículas acima pelos dados reais da dupla.
+- **Nycollas Vinicius** — matrícula: `000000000`
+- **Carlos Victor** — matrícula: `000000000`
 
 CRUD REST completo de notificações de agravos, com regras de negócio (RN01–RN03),
 padrão de erro **RFC 9457** (`application/problem+json`), paginação/ordenação com
@@ -46,6 +44,7 @@ mvnw.cmd spring-boot:run      # Windows
 
 # 3) abre o front-end
 #    http://localhost:8080
+#    Credenciais padrão: admin / admin123
 ```
 
 Alternativa com tudo em container (aplicação + banco):
